@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
-import os
-import base64
 import plotly.express as px
+import base64
 from pathlib import Path
 
 # =====================================================
@@ -13,45 +12,68 @@ st.set_page_config(
     page_title="Analisis Residuos No Peligrosos Ultimos 7 Meses",
     page_icon="♻️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # =====================================================
-# ARCHIVOS DEL REPOSITORIO
+# RUTAS DEL PROYECTO
 # =====================================================
 
-archivo_excel = "ANALISIS RESIDUOS NO PELIGROSOS ULTIMOS 7 MESES.xlsx"
-logo_superior = "logo1.png"
-logo_sello = "logoredondo.png"
+BASE_DIR = Path(__file__).resolve().parent
+
+archivo_excel = (
+    BASE_DIR
+    / "ANALISIS RESIDUOS NO PELIGROSOS ULTIMOS 7 MESES.xlsx"
+)
+
+logo_superior = BASE_DIR / "logo1.png"
+logo_sello = BASE_DIR / "logoredondo.png"
 
 # =====================================================
 # FUNCIONES PARA BUSCAR Y CARGAR IMAGENES
 # =====================================================
 
 def buscar_imagen(nombre_base):
-    extensiones = [
-        "",
+    """
+    Busca una imagen en la misma carpeta donde esta app.py.
+    Reconoce variantes como:
+    selfie.jpeg
+    selfie.jpg
+    selfie.PNG
+    Selfie nueva.jpeg
+    """
+
+    extensiones_validas = {
         ".png",
         ".jpg",
         ".jpeg",
-        ".webp",
-        ".PNG",
-        ".JPG",
-        ".JPEG",
-        ".WEBP"
-    ]
+        ".webp"
+    }
 
-    for extension in extensiones:
-        ruta = Path(f"{nombre_base}{extension}")
+    for ruta in BASE_DIR.iterdir():
+        if not ruta.is_file():
+            continue
 
-        if ruta.exists():
+        nombre_archivo = ruta.stem.lower().strip()
+        extension = ruta.suffix.lower().strip()
+
+        if (
+            nombre_archivo.startswith(
+                nombre_base.lower()
+            )
+            and extension in extensiones_validas
+        ):
             return ruta
 
     return None
 
 
 def imagen_base64(ruta):
-    if ruta and os.path.exists(ruta):
+    """
+    Convierte una imagen a Base64 para insertarla dentro del HTML.
+    """
+
+    if ruta and ruta.exists():
         with open(ruta, "rb") as imagen:
             return base64.b64encode(
                 imagen.read()
@@ -61,6 +83,10 @@ def imagen_base64(ruta):
 
 
 def obtener_mime(ruta):
+    """
+    Detecta el tipo de imagen para mostrarla correctamente.
+    """
+
     if not ruta:
         return "image/jpeg"
 
@@ -76,14 +102,28 @@ def obtener_mime(ruta):
 
 
 # =====================================================
-# IMAGENES
+# CARGAR IMAGENES
 # =====================================================
 
-ruta_selfie = buscar_imagen("selfie")
-selfie_base64 = imagen_base64(ruta_selfie)
-selfie_mime = obtener_mime(ruta_selfie)
+ruta_selfie = buscar_imagen(
+    "selfie"
+)
 
-sello_base64 = imagen_base64(logo_sello)
+selfie_base64 = imagen_base64(
+    ruta_selfie
+)
+
+selfie_mime = obtener_mime(
+    ruta_selfie
+)
+
+sello_base64 = imagen_base64(
+    logo_sello
+)
+
+# =====================================================
+# SELLO DE AGUA
+# =====================================================
 
 css_sello = ""
 
@@ -97,7 +137,8 @@ if sello_base64:
         transform: translate(-50%, -50%);
         width: 620px;
         height: 620px;
-        background-image: url("data:image/png;base64,{sello_base64}");
+        background-image:
+            url("data:image/png;base64,{sello_base64}");
         background-repeat: no-repeat;
         background-position: center;
         background-size: contain;
@@ -153,6 +194,22 @@ st.markdown(
         }}
 
         /* =============================================
+           OCULTAR MENU LATERAL
+        ============================================= */
+
+        section[data-testid="stSidebar"] {{
+            display: none !important;
+        }}
+
+        button[data-testid="stSidebarCollapseButton"] {{
+            display: none !important;
+        }}
+
+        div[data-testid="collapsedControl"] {{
+            display: none !important;
+        }}
+
+        /* =============================================
            FONDO GENERAL
         ============================================= */
 
@@ -169,7 +226,7 @@ st.markdown(
         }}
 
         .block-container {{
-            padding-top: 1.4rem;
+            padding-top: 1.3rem;
             padding-bottom: 1.5rem;
         }}
 
@@ -184,75 +241,16 @@ st.markdown(
         }}
 
         /* =============================================
-           MENU LATERAL
-        ============================================= */
-
-        section[data-testid="stSidebar"] {{
-            background-color: #111827 !important;
-            border-right: 1px solid #334155;
-        }}
-
-        section[data-testid="stSidebar"] > div {{
-            background-color: #111827 !important;
-        }}
-
-        section[data-testid="stSidebar"] * {{
-            color: #f8fafc !important;
-        }}
-
-        .sidebar-session {{
-            background: linear-gradient(
-                135deg,
-                #1e293b,
-                #0f172a
-            );
-            border: 1px solid #334155;
-            border-radius: 14px;
-            padding: 18px 16px;
-            margin-top: 18px;
-            margin-bottom: 18px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.30);
-        }}
-
-        .sidebar-label {{
-            color: #94a3b8 !important;
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: 1.2px;
-            margin-bottom: 9px;
-        }}
-
-        .sidebar-user {{
-            color: #f8fafc !important;
-            font-size: 19px;
-            font-weight: 800;
-        }}
-
-        section[data-testid="stSidebar"] .stButton > button {{
-            width: 100%;
-            background-color: #f59e0b !important;
-            color: #111827 !important;
-            border: none !important;
-            border-radius: 10px !important;
-            font-weight: 800 !important;
-            padding: 10px 14px !important;
-            transition: 0.2s ease-in-out;
-        }}
-
-        section[data-testid="stSidebar"] .stButton > button:hover {{
-            background-color: #fbbf24 !important;
-            color: #111827 !important;
-            border: none !important;
-        }}
-
-        /* =============================================
            FOTO SUPERIOR CENTRADA
         ============================================= */
 
         .login-photo-wrapper {{
-            width: 170px;
-            height: 170px;
-            margin: 30px auto 18px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 175px;
+            height: 175px;
+            margin: 28px auto 18px auto;
             border-radius: 50%;
             overflow: hidden;
             border: 4px solid #f59e0b;
@@ -260,13 +258,14 @@ st.markdown(
             box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.42);
         }}
 
-        .login-photo-inner {{
+        .login-photo {{
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            background-repeat: no-repeat;
-            background-size: 108%;
-            background-position: center 50%;
+            display: block;
+            object-fit: cover;
+            object-position: center 46%;
+            transform: scale(1.34);
+            transform-origin: center center;
             background-color: #d1d5db;
         }}
 
@@ -337,12 +336,12 @@ st.markdown(
             .login-photo-wrapper {{
                 width: 145px;
                 height: 145px;
-                margin-top: 22px;
+                margin-top: 20px;
             }}
 
-            .login-photo-inner {{
-                background-size: 108%;
-                background-position: center 50%;
+            .login-photo {{
+                object-position: center 46%;
+                transform: scale(1.34);
             }}
 
             .login-title {{
@@ -542,11 +541,15 @@ st.markdown(
 
 def validar_acceso():
     """
-    Muestra el dashboard solamente despues de validar
-    usuario y contrasena desde Streamlit Secrets.
+    Permite visualizar el dashboard solamente despues
+    de validar el usuario y la contrasena registrados
+    dentro de Streamlit Secrets.
     """
 
-    if st.session_state.get("autenticado", False):
+    if st.session_state.get(
+        "autenticado",
+        False
+    ):
         return True
 
     columna_izquierda, columna_login, columna_derecha = st.columns(
@@ -556,27 +559,31 @@ def validar_acceso():
     with columna_login:
 
         # -----------------------------------------------
-        # FOTOGRAFIA CENTRADA
+        # FOTOGRAFIA SUPERIOR
         # -----------------------------------------------
 
         if selfie_base64:
             st.markdown(
                 f"""
                 <div class="login-photo-wrapper">
-                    <div
-                        class="login-photo-inner"
-                        style="
-                            background-image:
-                            url('data:{selfie_mime};base64,{selfie_base64}');
-                        "
-                    ></div>
+                    <img
+                        src="data:{selfie_mime};base64,{selfie_base64}"
+                        class="login-photo"
+                        alt="Fotografia"
+                    >
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
+        else:
+            st.warning(
+                "No se encontro una fotografia cuyo nombre comience por "
+                "'selfie' dentro de la misma carpeta de app.py."
+            )
+
         # -----------------------------------------------
-        # TITULO
+        # TITULO DEL ACCESO
         # -----------------------------------------------
 
         st.markdown(
@@ -593,7 +600,7 @@ def validar_acceso():
         )
 
         # -----------------------------------------------
-        # FORMULARIO
+        # FORMULARIO DE ACCESO
         # -----------------------------------------------
 
         usuario = st.text_input(
@@ -615,14 +622,23 @@ def validar_acceso():
 
         if boton_ingresar:
             try:
-                usuarios_autorizados = st.secrets["usuarios"]
+                usuarios_autorizados = st.secrets[
+                    "usuarios"
+                ]
 
                 if (
                     usuario in usuarios_autorizados
-                    and contrasena == usuarios_autorizados[usuario]
+                    and contrasena
+                    == usuarios_autorizados[usuario]
                 ):
-                    st.session_state["autenticado"] = True
-                    st.session_state["usuario"] = usuario
+                    st.session_state[
+                        "autenticado"
+                    ] = True
+
+                    st.session_state[
+                        "usuario"
+                    ] = usuario
+
                     st.rerun()
 
                 else:
@@ -661,38 +677,6 @@ if not validar_acceso():
     st.stop()
 
 # =====================================================
-# MENU LATERAL
-# =====================================================
-
-with st.sidebar:
-    usuario_actual = st.session_state.get(
-        "usuario",
-        "Usuario"
-    )
-
-    st.markdown(
-        f"""
-        <div class="sidebar-session">
-            <div class="sidebar-label">
-                SESION INICIADA
-            </div>
-
-            <div class="sidebar-user">
-                👤 {usuario_actual}
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    if st.button(
-        "Cerrar sesion",
-        use_container_width=True
-    ):
-        st.session_state.clear()
-        st.rerun()
-
-# =====================================================
 # CARGAR Y TRANSFORMAR DATOS
 # =====================================================
 
@@ -704,13 +688,21 @@ def cargar_datos(ruta_excel):
         header=None
     )
 
-    df = df.dropna(how="all")
-    df = df.dropna(axis=1, how="all")
+    df = df.dropna(
+        how="all"
+    )
+
+    df = df.dropna(
+        axis=1,
+        how="all"
+    )
 
     registros = []
     columna_fecha = None
 
-    for col in range(len(df.columns)):
+    for col in range(
+        len(df.columns)
+    ):
         posibles_fechas = pd.to_datetime(
             df.iloc[2:, col],
             errors="coerce"
@@ -740,19 +732,32 @@ def cargar_datos(ruta_excel):
         12: "Diciembre"
     }
 
-    for fila in range(2, len(df)):
+    for fila in range(
+        2,
+        len(df)
+    ):
         fecha = pd.to_datetime(
-            df.iloc[fila, columna_fecha],
+            df.iloc[
+                fila,
+                columna_fecha
+            ],
             errors="coerce"
         )
 
-        if pd.isna(fecha):
+        if pd.isna(
+            fecha
+        ):
             continue
 
         anio = fecha.year
         mes_numero = fecha.month
-        mes_nombre = meses_espanol[mes_numero]
-        periodo = f"{mes_nombre} {anio}"
+        mes_nombre = meses_espanol[
+            mes_numero
+        ]
+
+        periodo = (
+            f"{mes_nombre} {anio}"
+        )
 
         residuo_actual = None
 
@@ -760,10 +765,19 @@ def cargar_datos(ruta_excel):
             columna_fecha + 1,
             len(df.columns)
         ):
-            nombre_residuo = df.iloc[0, col]
-            concepto = df.iloc[1, col]
+            nombre_residuo = df.iloc[
+                0,
+                col
+            ]
 
-            if pd.notna(nombre_residuo):
+            concepto = df.iloc[
+                1,
+                col
+            ]
+
+            if pd.notna(
+                nombre_residuo
+            ):
                 residuo_actual = str(
                     nombre_residuo
                 ).strip()
@@ -780,37 +794,56 @@ def cargar_datos(ruta_excel):
 
             if concepto == "Traslados":
                 traslados = pd.to_numeric(
-                    df.iloc[fila, col],
+                    df.iloc[
+                        fila,
+                        col
+                    ],
                     errors="coerce"
                 )
 
                 camion_carro = pd.to_numeric(
-                    df.iloc[fila, col + 1],
+                    df.iloc[
+                        fila,
+                        col + 1
+                    ],
                     errors="coerce"
                 )
 
                 peso_promedio = pd.to_numeric(
-                    df.iloc[fila, col + 2],
+                    df.iloc[
+                        fila,
+                        col + 2
+                    ],
                     errors="coerce"
                 )
 
                 traslados = (
-                    0 if pd.isna(traslados)
+                    0
+                    if pd.isna(
+                        traslados
+                    )
                     else traslados
                 )
 
                 camion_carro = (
-                    0 if pd.isna(camion_carro)
+                    0
+                    if pd.isna(
+                        camion_carro
+                    )
                     else camion_carro
                 )
 
                 peso_promedio = (
-                    0 if pd.isna(peso_promedio)
+                    0
+                    if pd.isna(
+                        peso_promedio
+                    )
                     else peso_promedio
                 )
 
                 toneladas = (
-                    traslados * peso_promedio
+                    traslados
+                    * peso_promedio
                 ) / 1000
 
                 registros.append({
@@ -821,18 +854,25 @@ def cargar_datos(ruta_excel):
                     "Periodo": periodo,
                     "Residuo": residuo_actual,
                     "Traslados": traslados,
-                    "Salidas camion y carro": camion_carro,
-                    "Peso promedio por traslado kg": peso_promedio,
-                    "Toneladas estimadas": toneladas
+                    "Salidas camion y carro":
+                        camion_carro,
+                    "Peso promedio por traslado kg":
+                        peso_promedio,
+                    "Toneladas estimadas":
+                        toneladas
                 })
 
-    return pd.DataFrame(registros)
+    return pd.DataFrame(
+        registros
+    )
 
 # =====================================================
-# ENCABEZADO PRINCIPAL
+# ENCABEZADO DEL PANEL
 # =====================================================
 
-col_titulo, col_logo = st.columns([5, 1])
+col_titulo, col_logo = st.columns(
+    [5, 1]
+)
 
 with col_titulo:
     st.markdown(
@@ -858,9 +898,11 @@ with col_titulo:
     )
 
 with col_logo:
-    if os.path.exists(logo_superior):
+    if logo_superior.exists():
         st.image(
-            logo_superior,
+            str(
+                logo_superior
+            ),
             width=190
         )
 
@@ -869,7 +911,9 @@ with col_logo:
 # =====================================================
 
 try:
-    df = cargar_datos(archivo_excel)
+    df = cargar_datos(
+        archivo_excel
+    )
 
     # =================================================
     # FILTROS
@@ -884,20 +928,37 @@ try:
         unsafe_allow_html=True
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(
+        3
+    )
 
     with col1:
         filtro_anio = st.multiselect(
             "Año",
-            sorted(df["Año"].unique()),
-            default=sorted(df["Año"].unique())
+            sorted(
+                df["Año"]
+                .unique()
+            ),
+            default=sorted(
+                df["Año"]
+                .unique()
+            )
         )
 
     with col2:
         meses_ordenados = (
-            df[["Mes numero", "Mes"]]
+            df[
+                [
+                    "Mes numero",
+                    "Mes"
+                ]
+            ]
             .drop_duplicates()
-            .sort_values("Mes numero")["Mes"]
+            .sort_values(
+                "Mes numero"
+            )[
+                "Mes"
+            ]
             .tolist()
         )
 
@@ -910,11 +971,19 @@ try:
     with col3:
         filtro_residuo = st.multiselect(
             "Residuo / disposicion",
-            sorted(df["Residuo"].unique()),
-            default=sorted(df["Residuo"].unique())
+            sorted(
+                df["Residuo"]
+                .unique()
+            ),
+            default=sorted(
+                df["Residuo"]
+                .unique()
+            )
         )
 
-    col4, col5 = st.columns(2)
+    col4, col5 = st.columns(
+        2
+    )
 
     with col4:
         filtro_tipo_salida = st.selectbox(
@@ -939,44 +1008,93 @@ try:
     # =================================================
 
     df_filtrado = df[
-        (df["Año"].isin(filtro_anio))
-        & (df["Mes"].isin(filtro_mes))
-        & (df["Residuo"].isin(filtro_residuo))
-        & (df["Traslados"] >= filtro_minimo_traslados)
+        (
+            df["Año"]
+            .isin(
+                filtro_anio
+            )
+        )
+        &
+        (
+            df["Mes"]
+            .isin(
+                filtro_mes
+            )
+        )
+        &
+        (
+            df["Residuo"]
+            .isin(
+                filtro_residuo
+            )
+        )
+        &
+        (
+            df["Traslados"]
+            >= filtro_minimo_traslados
+        )
     ]
 
-    if filtro_tipo_salida == "Solo salidas con camion y carro":
+    if (
+        filtro_tipo_salida
+        == "Solo salidas con camion y carro"
+    ):
         df_filtrado = df_filtrado[
-            df_filtrado["Salidas camion y carro"] > 0
+            df_filtrado[
+                "Salidas camion y carro"
+            ] > 0
         ]
 
-    elif filtro_tipo_salida == "Solo salidas sin camion y carro":
+    elif (
+        filtro_tipo_salida
+        == "Solo salidas sin camion y carro"
+    ):
         df_filtrado = df_filtrado[
-            df_filtrado["Salidas camion y carro"] == 0
+            df_filtrado[
+                "Salidas camion y carro"
+            ] == 0
         ]
 
     # =================================================
     # INDICADORES PRINCIPALES
     # =================================================
 
-    st.markdown("---")
-    st.subheader("📌 Indicadores principales")
+    st.markdown(
+        "---"
+    )
 
-    total_traslados = df_filtrado[
-        "Traslados"
-    ].sum()
+    st.subheader(
+        "📌 Indicadores principales"
+    )
 
-    total_camion_carro = df_filtrado[
-        "Salidas camion y carro"
-    ].sum()
+    total_traslados = (
+        df_filtrado[
+            "Traslados"
+        ]
+        .sum()
+    )
 
-    total_toneladas = df_filtrado[
-        "Toneladas estimadas"
-    ].sum()
+    total_camion_carro = (
+        df_filtrado[
+            "Salidas camion y carro"
+        ]
+        .sum()
+    )
+
+    total_toneladas = (
+        df_filtrado[
+            "Toneladas estimadas"
+        ]
+        .sum()
+    )
 
     promedio_mensual_traslados = (
         df_filtrado
-        .groupby("Periodo")["Traslados"]
+        .groupby(
+            "Periodo"
+        )[
+            "Traslados"
+        ]
         .sum()
         .mean()
         if not df_filtrado.empty
@@ -985,7 +1103,11 @@ try:
 
     promedio_mensual_camion_carro = (
         df_filtrado
-        .groupby("Periodo")["Salidas camion y carro"]
+        .groupby(
+            "Periodo"
+        )[
+            "Salidas camion y carro"
+        ]
         .sum()
         .mean()
         if not df_filtrado.empty
@@ -994,7 +1116,11 @@ try:
 
     promedio_mensual_toneladas = (
         df_filtrado
-        .groupby("Periodo")["Toneladas estimadas"]
+        .groupby(
+            "Periodo"
+        )[
+            "Toneladas estimadas"
+        ]
         .sum()
         .mean()
         if not df_filtrado.empty
@@ -1002,12 +1128,15 @@ try:
     )
 
     promedio_toneladas_traslado = (
-        total_toneladas / total_traslados
+        total_toneladas
+        / total_traslados
         if total_traslados > 0
         else 0
     )
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns(
+        4
+    )
 
     col1.metric(
         "Total traslados",
@@ -1029,7 +1158,9 @@ try:
         f"{promedio_toneladas_traslado:,.2f}"
     )
 
-    col5, col6, col7 = st.columns(3)
+    col5, col6, col7 = st.columns(
+        3
+    )
 
     col5.metric(
         "Toneladas estimadas",
@@ -1054,62 +1185,78 @@ try:
         "📊 Resumen consolidado por residuo / disposicion"
     )
 
-    resumen = df_filtrado.groupby(
-        "Residuo"
-    ).agg(
-        Total_traslados=(
-            "Traslados",
-            "sum"
-        ),
-        Total_salidas_camion_y_carro=(
-            "Salidas camion y carro",
-            "sum"
-        ),
-        Total_toneladas_estimadas=(
-            "Toneladas estimadas",
-            "sum"
-        ),
-        Promedio_mensual_traslados=(
-            "Traslados",
-            "mean"
-        ),
-        Promedio_mensual_camion_y_carro=(
-            "Salidas camion y carro",
-            "mean"
-        ),
-        Promedio_peso_por_traslado_kg=(
-            "Peso promedio por traslado kg",
-            "mean"
+    resumen = (
+        df_filtrado
+        .groupby(
+            "Residuo"
         )
-    ).reset_index()
+        .agg(
+            Total_traslados=(
+                "Traslados",
+                "sum"
+            ),
+            Total_salidas_camion_y_carro=(
+                "Salidas camion y carro",
+                "sum"
+            ),
+            Total_toneladas_estimadas=(
+                "Toneladas estimadas",
+                "sum"
+            ),
+            Promedio_mensual_traslados=(
+                "Traslados",
+                "mean"
+            ),
+            Promedio_mensual_camion_y_carro=(
+                "Salidas camion y carro",
+                "mean"
+            ),
+            Promedio_peso_por_traslado_kg=(
+                "Peso promedio por traslado kg",
+                "mean"
+            )
+        )
+        .reset_index()
+    )
 
     resumen[
         "Promedio toneladas por traslado"
     ] = (
-        resumen["Total_toneladas_estimadas"]
-        / resumen["Total_traslados"]
-    ).fillna(0)
-
-    resumen = resumen.rename(
-        columns={
-            "Residuo":
-                "Residuo / disposicion",
-            "Total_traslados":
-                "Total traslados",
-            "Total_salidas_camion_y_carro":
-                "Total salidas camion y carro",
-            "Total_toneladas_estimadas":
-                "Total toneladas estimadas",
-            "Promedio_mensual_traslados":
-                "Promedio mensual traslados",
-            "Promedio_mensual_camion_y_carro":
-                "Promedio mensual camion y carro",
-            "Promedio_peso_por_traslado_kg":
-                "Promedio peso por traslado kg"
-        }
+        resumen[
+            "Total_toneladas_estimadas"
+        ]
+        /
+        resumen[
+            "Total_traslados"
+        ]
+    ).fillna(
+        0
     )
 
-    resumen = resumen.round(2)
+    resumen = (
+        resumen
+        .rename(
+            columns={
+                "Residuo":
+                    "Residuo / disposicion",
+                "Total_traslados":
+                    "Total traslados",
+                "Total_salidas_camion_y_carro":
+                    "Total salidas camion y carro",
+                "Total_toneladas_estimadas":
+                    "Total toneladas estimadas",
+                "Promedio_mensual_traslados":
+                    "Promedio mensual traslados",
+                "Promedio_mensual_camion_y_carro":
+                    "Promedio mensual camion y carro",
+                "Promedio_peso_por_traslado_kg":
+                    "Promedio peso por traslado kg"
+            }
+        )
+        .round(
+            2
+        )
+    )
 
     st.dataframe(
         resumen,
@@ -1118,7 +1265,7 @@ try:
     )
 
     # =================================================
-    # PROMEDIOS MENSUALES POR RESIDUO
+    # PROMEDIOS MENSUALES POR DISPOSICION
     # =================================================
 
     st.subheader(
@@ -1127,7 +1274,9 @@ try:
 
     promedio_disposicion = (
         df_filtrado
-        .groupby("Residuo")
+        .groupby(
+            "Residuo"
+        )
         .agg(
             Promedio_mensual_traslados=(
                 "Traslados",
@@ -1143,7 +1292,9 @@ try:
             )
         )
         .reset_index()
-        .round(2)
+        .round(
+            2
+        )
         .rename(
             columns={
                 "Residuo":
@@ -1158,7 +1309,9 @@ try:
         )
     )
 
-    col_g1, col_g2 = st.columns(2)
+    col_g1, col_g2 = st.columns(
+        2
+    )
 
     with col_g1:
         fig_torta = px.pie(
@@ -1212,7 +1365,8 @@ try:
 
     with col_g2:
         fig_barras_promedio = px.bar(
-            promedio_disposicion.sort_values(
+            promedio_disposicion
+            .sort_values(
                 "Promedio mensual traslados",
                 ascending=False
             ),
@@ -1254,11 +1408,14 @@ try:
             use_container_width=True
         )
 
-    col_g3, col_g4 = st.columns(2)
+    col_g3, col_g4 = st.columns(
+        2
+    )
 
     with col_g3:
         fig_camion = px.bar(
-            promedio_disposicion.sort_values(
+            promedio_disposicion
+            .sort_values(
                 "Promedio mensual camion y carro",
                 ascending=False
             ),
@@ -1302,7 +1459,8 @@ try:
 
     with col_g4:
         fig_toneladas = px.bar(
-            promedio_disposicion.sort_values(
+            promedio_disposicion
+            .sort_values(
                 "Promedio mensual toneladas",
                 ascending=False
             ),
@@ -1348,11 +1506,18 @@ try:
     # RESUMEN MENSUAL
     # =================================================
 
-    st.subheader("📅 Resumen mensual")
+    st.subheader(
+        "📅 Resumen mensual"
+    )
 
     resumen_mensual = (
         df_filtrado
-        .groupby(["Fecha", "Periodo"])
+        .groupby(
+            [
+                "Fecha",
+                "Periodo"
+            ]
+        )
         .agg(
             Total_traslados=(
                 "Traslados",
@@ -1368,12 +1533,18 @@ try:
             )
         )
         .reset_index()
-        .sort_values("Fecha")
+        .sort_values(
+            "Fecha"
+        )
     )
 
     resumen_mensual_tabla = (
         resumen_mensual
-        .drop(columns=["Fecha"])
+        .drop(
+            columns=[
+                "Fecha"
+            ]
+        )
         .rename(
             columns={
                 "Total_traslados":
@@ -1384,7 +1555,9 @@ try:
                     "Total toneladas estimadas"
             }
         )
-        .round(2)
+        .round(
+            2
+        )
     )
 
     st.dataframe(
@@ -1448,6 +1621,10 @@ try:
         unsafe_allow_html=True
     )
 
+# =====================================================
+# MANEJO DE ERRORES
+# =====================================================
+
 except FileNotFoundError:
     st.error(
         "No se encontro la planilla Excel."
@@ -1459,7 +1636,7 @@ except FileNotFoundError:
     )
 
     st.code(
-        archivo_excel
+        "ANALISIS RESIDUOS NO PELIGROSOS ULTIMOS 7 MESES.xlsx"
     )
 
 except Exception as error:
