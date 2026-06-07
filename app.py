@@ -3,33 +3,88 @@ import pandas as pd
 import os
 import base64
 import plotly.express as px
+from pathlib import Path
 
 # =====================================================
-# CONFIGURACIÓN GENERAL
+# CONFIGURACION GENERAL
 # =====================================================
+
 st.set_page_config(
-    page_title="Análisis Residuos No Peligrosos Últimos 7 Meses",
-    layout="wide"
+    page_title="Analisis Residuos No Peligrosos Ultimos 7 Meses",
+    page_icon="♻️",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 # =====================================================
-# ARCHIVOS
+# ARCHIVOS DEL REPOSITORIO
 # =====================================================
+
 archivo_excel = "ANALISIS RESIDUOS NO PELIGROSOS ULTIMOS 7 MESES.xlsx"
 logo_superior = "logo1.png"
 logo_sello = "logoredondo.png"
 
 # =====================================================
-# CONVERTIR IMAGEN A BASE64 PARA SELLO DE AGUA
+# FUNCIONES PARA BUSCAR Y CARGAR IMAGENES
 # =====================================================
-def imagen_base64(ruta):
-    if os.path.exists(ruta):
-        with open(ruta, "rb") as imagen:
-            return base64.b64encode(imagen.read()).decode()
+
+def buscar_imagen(nombre_base):
+    extensiones = [
+        "",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".PNG",
+        ".JPG",
+        ".JPEG",
+        ".WEBP"
+    ]
+
+    for extension in extensiones:
+        ruta = Path(f"{nombre_base}{extension}")
+
+        if ruta.exists():
+            return ruta
+
     return None
 
 
+def imagen_base64(ruta):
+    if ruta and os.path.exists(ruta):
+        with open(ruta, "rb") as imagen:
+            return base64.b64encode(
+                imagen.read()
+            ).decode()
+
+    return None
+
+
+def obtener_mime(ruta):
+    if not ruta:
+        return "image/jpeg"
+
+    extension = ruta.suffix.lower()
+
+    if extension == ".png":
+        return "image/png"
+
+    if extension == ".webp":
+        return "image/webp"
+
+    return "image/jpeg"
+
+
+# =====================================================
+# IMAGENES
+# =====================================================
+
+ruta_selfie = buscar_imagen("selfie")
+selfie_base64 = imagen_base64(ruta_selfie)
+selfie_mime = obtener_mime(ruta_selfie)
+
 sello_base64 = imagen_base64(logo_sello)
+
 css_sello = ""
 
 if sello_base64:
@@ -60,12 +115,47 @@ if sello_base64:
 # =====================================================
 # ESTILO VISUAL
 # =====================================================
+
 st.markdown(
     f"""
     <style>
-        /* =================================================
+
+        /* =============================================
+           OCULTAR BARRA SUPERIOR DE STREAMLIT
+        ============================================= */
+
+        header[data-testid="stHeader"] {{
+            display: none !important;
+        }}
+
+        div[data-testid="stToolbar"] {{
+            display: none !important;
+        }}
+
+        div[data-testid="stDecoration"] {{
+            display: none !important;
+        }}
+
+        div[data-testid="stStatusWidget"] {{
+            display: none !important;
+        }}
+
+        button[data-testid="stBaseButton-headerNoPadding"] {{
+            display: none !important;
+        }}
+
+        #MainMenu {{
+            visibility: hidden !important;
+        }}
+
+        footer {{
+            visibility: hidden !important;
+        }}
+
+        /* =============================================
            FONDO GENERAL
-        ================================================= */
+        ============================================= */
+
         .stApp {{
             background-color: #0f172a;
             color: #ffffff;
@@ -73,18 +163,201 @@ st.markdown(
 
         {css_sello}
 
-        html, body {{
+        html,
+        body {{
             color: #ffffff;
         }}
 
-        h1, h2, h3, h4, h5, h6 {{
+        .block-container {{
+            padding-top: 1.4rem;
+            padding-bottom: 1.5rem;
+        }}
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {{
             color: #ffffff !important;
             font-weight: 800 !important;
         }}
 
-        /* =================================================
-           ENCABEZADO
-        ================================================= */
+        /* =============================================
+           MENU LATERAL
+        ============================================= */
+
+        section[data-testid="stSidebar"] {{
+            background-color: #111827 !important;
+            border-right: 1px solid #334155;
+        }}
+
+        section[data-testid="stSidebar"] > div {{
+            background-color: #111827 !important;
+        }}
+
+        section[data-testid="stSidebar"] * {{
+            color: #f8fafc !important;
+        }}
+
+        .sidebar-session {{
+            background: linear-gradient(
+                135deg,
+                #1e293b,
+                #0f172a
+            );
+            border: 1px solid #334155;
+            border-radius: 14px;
+            padding: 18px 16px;
+            margin-top: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.30);
+        }}
+
+        .sidebar-label {{
+            color: #94a3b8 !important;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            margin-bottom: 9px;
+        }}
+
+        .sidebar-user {{
+            color: #f8fafc !important;
+            font-size: 19px;
+            font-weight: 800;
+        }}
+
+        section[data-testid="stSidebar"] .stButton > button {{
+            width: 100%;
+            background-color: #f59e0b !important;
+            color: #111827 !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 800 !important;
+            padding: 10px 14px !important;
+            transition: 0.2s ease-in-out;
+        }}
+
+        section[data-testid="stSidebar"] .stButton > button:hover {{
+            background-color: #fbbf24 !important;
+            color: #111827 !important;
+            border: none !important;
+        }}
+
+        /* =============================================
+           FOTO SUPERIOR CENTRADA
+        ============================================= */
+
+        .login-photo-wrapper {{
+            width: 170px;
+            height: 170px;
+            margin: 30px auto 18px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #f59e0b;
+            background-color: #d1d5db;
+            box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.42);
+        }}
+
+        .login-photo-inner {{
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-repeat: no-repeat;
+            background-size: 108%;
+            background-position: center 50%;
+            background-color: #d1d5db;
+        }}
+
+        /* =============================================
+           PANTALLA DE ACCESO
+        ============================================= */
+
+        .login-title {{
+            text-align: center;
+            color: #f8fafc;
+            font-size: 42px;
+            font-weight: 900;
+            margin-top: 6px;
+            margin-bottom: 8px;
+        }}
+
+        .login-subtitle {{
+            text-align: center;
+            color: #cbd5e1;
+            font-size: 17px;
+            margin-bottom: 25px;
+        }}
+
+        .login-footer {{
+            text-align: center;
+            margin-top: 34px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(148, 163, 184, 0.30);
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.7;
+        }}
+
+        .login-footer strong {{
+            color: #e2e8f0;
+            font-size: 14px;
+        }}
+
+        div[data-testid="stTextInput"] label {{
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }}
+
+        div[data-testid="stTextInput"] input {{
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            border-radius: 8px !important;
+        }}
+
+        div[data-testid="stButton"] > button[kind="primary"] {{
+            background-color: #ef4444 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }}
+
+        div[data-testid="stButton"] > button[kind="primary"]:hover {{
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+        }}
+
+        /* =============================================
+           AJUSTE PARA CELULARES
+        ============================================= */
+
+        @media (max-width: 900px) {{
+            .login-photo-wrapper {{
+                width: 145px;
+                height: 145px;
+                margin-top: 22px;
+            }}
+
+            .login-photo-inner {{
+                background-size: 108%;
+                background-position: center 50%;
+            }}
+
+            .login-title {{
+                font-size: 34px;
+            }}
+
+            .login-subtitle {{
+                font-size: 15px;
+            }}
+        }}
+
+        /* =============================================
+           ENCABEZADO PRINCIPAL
+        ============================================= */
+
         .titulo-principal {{
             font-size: 46px;
             font-weight: 900;
@@ -103,9 +376,10 @@ st.markdown(
             font-weight: 500;
         }}
 
-        /* =================================================
-           TÍTULO DE FILTROS
-        ================================================= */
+        /* =============================================
+           TITULO DE FILTROS
+        ============================================= */
+
         .seccion-filtros {{
             border-left: 8px solid #f59e0b;
             padding-left: 20px;
@@ -122,16 +396,16 @@ st.markdown(
             font-size: 17px !important;
         }}
 
-        /* =================================================
-           CAJAS DE SELECCIÓN
-        ================================================= */
+        /* =============================================
+           CAJAS DE SELECCION
+        ============================================= */
+
         div[data-baseweb="select"] > div {{
             background-color: #f8fafc !important;
             border: 1px solid #cbd5e1 !important;
             border-radius: 10px !important;
         }}
 
-        /* Texto interno visible en selectbox y multiselect */
         div[data-baseweb="select"] > div > div {{
             color: #0f172a !important;
         }}
@@ -156,15 +430,15 @@ st.markdown(
             opacity: 1 !important;
         }}
 
-        /* Flecha de los filtros */
         div[data-baseweb="select"] svg {{
             fill: #0f172a !important;
             color: #0f172a !important;
         }}
 
-        /* =================================================
-           ELEMENTOS SELECCIONADOS EN MULTISELECT
-        ================================================= */
+        /* =============================================
+           ELEMENTOS DEL MULTISELECT
+        ============================================= */
+
         span[data-baseweb="tag"] {{
             background-color: #ef4444 !important;
             color: #ffffff !important;
@@ -181,66 +455,49 @@ st.markdown(
             color: #ffffff !important;
         }}
 
-        /* =================================================
+        /* =============================================
            OPCIONES DESPLEGABLES
-        ================================================= */
-        div[data-baseweb="popover"] {{
-            background-color: #f8fafc !important;
-        }}
+        ============================================= */
 
-        div[data-baseweb="menu"] {{
-            background-color: #f8fafc !important;
-        }}
-
-        div[role="listbox"] {{
-            background-color: #f8fafc !important;
-        }}
-
+        div[data-baseweb="popover"],
+        div[data-baseweb="menu"],
+        div[role="listbox"],
         ul[role="listbox"] {{
             background-color: #f8fafc !important;
         }}
 
-        div[role="option"] {{
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-            font-weight: 600 !important;
-        }}
-
-        div[role="option"] * {{
-            color: #0f172a !important;
-            font-weight: 600 !important;
-        }}
-
-        div[role="option"]:hover {{
-            background-color: #e2e8f0 !important;
-        }}
-
+        div[role="option"],
         li[role="option"] {{
             background-color: #f8fafc !important;
             color: #0f172a !important;
             font-weight: 600 !important;
         }}
 
+        div[role="option"] *,
         li[role="option"] * {{
             color: #0f172a !important;
+            font-weight: 600 !important;
         }}
 
+        div[role="option"]:hover,
         li[role="option"]:hover {{
             background-color: #e2e8f0 !important;
         }}
 
-        /* =================================================
-           CAMPO NUMÉRICO
-        ================================================= */
+        /* =============================================
+           CAMPOS NUMERICOS
+        ============================================= */
+
         input {{
             background-color: #f8fafc !important;
             color: #0f172a !important;
             font-weight: 600 !important;
         }}
 
-        /* =================================================
+        /* =============================================
            INDICADORES
-        ================================================= */
+        ============================================= */
+
         div[data-testid="stMetric"] {{
             background-color: rgba(30, 41, 59, 0.96);
             padding: 24px;
@@ -261,9 +518,10 @@ st.markdown(
             font-weight: 900 !important;
         }}
 
-        /* =================================================
+        /* =============================================
            TABLAS Y SEPARADORES
-        ================================================= */
+        ============================================= */
+
         .stDataFrame {{
             background-color: #ffffff;
             border-radius: 10px;
@@ -272,14 +530,172 @@ st.markdown(
         hr {{
             border-color: #334155 !important;
         }}
+
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # =====================================================
+# ACCESO RESTRINGIDO
+# =====================================================
+
+def validar_acceso():
+    """
+    Muestra el dashboard solamente despues de validar
+    usuario y contrasena desde Streamlit Secrets.
+    """
+
+    if st.session_state.get("autenticado", False):
+        return True
+
+    columna_izquierda, columna_login, columna_derecha = st.columns(
+        [1, 1.2, 1]
+    )
+
+    with columna_login:
+
+        # -----------------------------------------------
+        # FOTOGRAFIA CENTRADA
+        # -----------------------------------------------
+
+        if selfie_base64:
+            st.markdown(
+                f"""
+                <div class="login-photo-wrapper">
+                    <div
+                        class="login-photo-inner"
+                        style="
+                            background-image:
+                            url('data:{selfie_mime};base64,{selfie_base64}');
+                        "
+                    ></div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        # -----------------------------------------------
+        # TITULO
+        # -----------------------------------------------
+
+        st.markdown(
+            """
+            <div class="login-title">
+                🔐 Acceso restringido
+            </div>
+
+            <div class="login-subtitle">
+                Ingresa tu usuario y contrasena para visualizar el panel.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # -----------------------------------------------
+        # FORMULARIO
+        # -----------------------------------------------
+
+        usuario = st.text_input(
+            "Usuario",
+            key="login_usuario"
+        )
+
+        contrasena = st.text_input(
+            "Contrasena",
+            type="password",
+            key="login_contrasena"
+        )
+
+        boton_ingresar = st.button(
+            "Ingresar",
+            type="primary",
+            use_container_width=True
+        )
+
+        if boton_ingresar:
+            try:
+                usuarios_autorizados = st.secrets["usuarios"]
+
+                if (
+                    usuario in usuarios_autorizados
+                    and contrasena == usuarios_autorizados[usuario]
+                ):
+                    st.session_state["autenticado"] = True
+                    st.session_state["usuario"] = usuario
+                    st.rerun()
+
+                else:
+                    st.error(
+                        "Usuario o contrasena incorrectos."
+                    )
+
+            except Exception:
+                st.error(
+                    "No se encontraron usuarios configurados en Secrets."
+                )
+
+        # -----------------------------------------------
+        # IDENTIFICACION DEL PANEL
+        # -----------------------------------------------
+
+        st.markdown(
+            """
+            <div class="login-footer">
+                <strong>
+                    Panel desarrollado por Ricardo Grez
+                </strong>
+                <br>
+                Administrador de Contrato | SAIVAM
+                <br>
+                Acceso restringido para usuarios autorizados
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    return False
+
+
+if not validar_acceso():
+    st.stop()
+
+# =====================================================
+# MENU LATERAL
+# =====================================================
+
+with st.sidebar:
+    usuario_actual = st.session_state.get(
+        "usuario",
+        "Usuario"
+    )
+
+    st.markdown(
+        f"""
+        <div class="sidebar-session">
+            <div class="sidebar-label">
+                SESION INICIADA
+            </div>
+
+            <div class="sidebar-user">
+                👤 {usuario_actual}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if st.button(
+        "Cerrar sesion",
+        use_container_width=True
+    ):
+        st.session_state.clear()
+        st.rerun()
+
+# =====================================================
 # CARGAR Y TRANSFORMAR DATOS
 # =====================================================
+
 @st.cache_data
 def cargar_datos(ruta_excel):
     df = pd.read_excel(
@@ -306,7 +722,7 @@ def cargar_datos(ruta_excel):
 
     if columna_fecha is None:
         raise ValueError(
-            "No se encontró la columna de fechas en la planilla."
+            "No se encontro la columna de fechas en la planilla."
         )
 
     meses_espanol = {
@@ -340,17 +756,27 @@ def cargar_datos(ruta_excel):
 
         residuo_actual = None
 
-        for col in range(columna_fecha + 1, len(df.columns)):
+        for col in range(
+            columna_fecha + 1,
+            len(df.columns)
+        ):
             nombre_residuo = df.iloc[0, col]
             concepto = df.iloc[1, col]
 
             if pd.notna(nombre_residuo):
-                residuo_actual = str(nombre_residuo).strip()
+                residuo_actual = str(
+                    nombre_residuo
+                ).strip()
 
-            if pd.isna(concepto) or residuo_actual is None:
+            if (
+                pd.isna(concepto)
+                or residuo_actual is None
+            ):
                 continue
 
-            concepto = str(concepto).strip()
+            concepto = str(
+                concepto
+            ).strip()
 
             if concepto == "Traslados":
                 traslados = pd.to_numeric(
@@ -390,12 +816,12 @@ def cargar_datos(ruta_excel):
                 registros.append({
                     "Fecha": fecha,
                     "Año": anio,
-                    "Mes número": mes_numero,
+                    "Mes numero": mes_numero,
                     "Mes": mes_nombre,
                     "Periodo": periodo,
                     "Residuo": residuo_actual,
                     "Traslados": traslados,
-                    "Salidas camión y carro": camion_carro,
+                    "Salidas camion y carro": camion_carro,
                     "Peso promedio por traslado kg": peso_promedio,
                     "Toneladas estimadas": toneladas
                 })
@@ -403,15 +829,16 @@ def cargar_datos(ruta_excel):
     return pd.DataFrame(registros)
 
 # =====================================================
-# ENCABEZADO
+# ENCABEZADO PRINCIPAL
 # =====================================================
+
 col_titulo, col_logo = st.columns([5, 1])
 
 with col_titulo:
     st.markdown(
         """
         <div class="titulo-principal">
-            ♻️ Análisis Residuos No Peligrosos Últimos 7 Meses
+            ♻️ Analisis Residuos No Peligrosos Ultimos 7 Meses
         </div>
         """,
         unsafe_allow_html=True
@@ -420,10 +847,10 @@ with col_titulo:
     st.markdown(
         """
         <div class="subtitulo">
-            El objetivo de este análisis es entregar una visión más clara
+            El objetivo de este analisis es entregar una vision mas clara
             del comportamiento operacional de los principales residuos
             gestionados, identificando la cantidad de traslados realizados,
-            el uso de camión y carro, y las toneladas estimadas movilizadas
+            el uso de camion y carro, y las toneladas estimadas movilizadas
             por cada tipo de residuo.
         </div>
         """,
@@ -440,16 +867,18 @@ with col_logo:
 # =====================================================
 # DASHBOARD PRINCIPAL
 # =====================================================
+
 try:
     df = cargar_datos(archivo_excel)
 
     # =================================================
     # FILTROS
     # =================================================
+
     st.markdown(
         """
         <div class="seccion-filtros">
-            🔎 Filtros de análisis
+            🔎 Filtros de analisis
         </div>
         """,
         unsafe_allow_html=True
@@ -466,9 +895,9 @@ try:
 
     with col2:
         meses_ordenados = (
-            df[["Mes número", "Mes"]]
+            df[["Mes numero", "Mes"]]
             .drop_duplicates()
-            .sort_values("Mes número")["Mes"]
+            .sort_values("Mes numero")["Mes"]
             .tolist()
         )
 
@@ -480,7 +909,7 @@ try:
 
     with col3:
         filtro_residuo = st.multiselect(
-            "Residuo / disposición",
+            "Residuo / disposicion",
             sorted(df["Residuo"].unique()),
             default=sorted(df["Residuo"].unique())
         )
@@ -489,17 +918,17 @@ try:
 
     with col4:
         filtro_tipo_salida = st.selectbox(
-            "Tipo de análisis",
+            "Tipo de analisis",
             [
                 "Todos los traslados",
-                "Solo salidas con camión y carro",
-                "Solo salidas sin camión y carro"
+                "Solo salidas con camion y carro",
+                "Solo salidas sin camion y carro"
             ]
         )
 
     with col5:
         filtro_minimo_traslados = st.number_input(
-            "Mínimo de traslados",
+            "Minimo de traslados",
             min_value=0,
             value=0,
             step=1
@@ -508,40 +937,42 @@ try:
     # =================================================
     # APLICAR FILTROS
     # =================================================
+
     df_filtrado = df[
-        (df["Año"].isin(filtro_anio)) &
-        (df["Mes"].isin(filtro_mes)) &
-        (df["Residuo"].isin(filtro_residuo)) &
-        (df["Traslados"] >= filtro_minimo_traslados)
+        (df["Año"].isin(filtro_anio))
+        & (df["Mes"].isin(filtro_mes))
+        & (df["Residuo"].isin(filtro_residuo))
+        & (df["Traslados"] >= filtro_minimo_traslados)
     ]
 
-    if filtro_tipo_salida == "Solo salidas con camión y carro":
+    if filtro_tipo_salida == "Solo salidas con camion y carro":
         df_filtrado = df_filtrado[
-            df_filtrado["Salidas camión y carro"] > 0
+            df_filtrado["Salidas camion y carro"] > 0
         ]
 
-    elif filtro_tipo_salida == "Solo salidas sin camión y carro":
+    elif filtro_tipo_salida == "Solo salidas sin camion y carro":
         df_filtrado = df_filtrado[
-            df_filtrado["Salidas camión y carro"] == 0
+            df_filtrado["Salidas camion y carro"] == 0
         ]
 
     # =================================================
-    # MÉTRICAS PRINCIPALES
+    # INDICADORES PRINCIPALES
     # =================================================
+
     st.markdown("---")
     st.subheader("📌 Indicadores principales")
 
-    total_traslados = (
-        df_filtrado["Traslados"].sum()
-    )
+    total_traslados = df_filtrado[
+        "Traslados"
+    ].sum()
 
-    total_camion_carro = (
-        df_filtrado["Salidas camión y carro"].sum()
-    )
+    total_camion_carro = df_filtrado[
+        "Salidas camion y carro"
+    ].sum()
 
-    total_toneladas = (
-        df_filtrado["Toneladas estimadas"].sum()
-    )
+    total_toneladas = df_filtrado[
+        "Toneladas estimadas"
+    ].sum()
 
     promedio_mensual_traslados = (
         df_filtrado
@@ -554,7 +985,7 @@ try:
 
     promedio_mensual_camion_carro = (
         df_filtrado
-        .groupby("Periodo")["Salidas camión y carro"]
+        .groupby("Periodo")["Salidas camion y carro"]
         .sum()
         .mean()
         if not df_filtrado.empty
@@ -589,7 +1020,7 @@ try:
     )
 
     col3.metric(
-        "Salidas camión y carro",
+        "Salidas camion y carro",
         f"{total_camion_carro:,.0f}"
     )
 
@@ -606,7 +1037,7 @@ try:
     )
 
     col6.metric(
-        "Promedio mensual camión y carro",
+        "Promedio mensual camion y carro",
         f"{promedio_mensual_camion_carro:,.2f}"
     )
 
@@ -616,19 +1047,22 @@ try:
     )
 
     # =================================================
-    # RESUMEN POR RESIDUO
+    # RESUMEN CONSOLIDADO
     # =================================================
+
     st.subheader(
-        "📊 Resumen consolidado por residuo / disposición"
+        "📊 Resumen consolidado por residuo / disposicion"
     )
 
-    resumen = df_filtrado.groupby("Residuo").agg(
+    resumen = df_filtrado.groupby(
+        "Residuo"
+    ).agg(
         Total_traslados=(
             "Traslados",
             "sum"
         ),
         Total_salidas_camion_y_carro=(
-            "Salidas camión y carro",
+            "Salidas camion y carro",
             "sum"
         ),
         Total_toneladas_estimadas=(
@@ -640,7 +1074,7 @@ try:
             "mean"
         ),
         Promedio_mensual_camion_y_carro=(
-            "Salidas camión y carro",
+            "Salidas camion y carro",
             "mean"
         ),
         Promedio_peso_por_traslado_kg=(
@@ -649,25 +1083,31 @@ try:
         )
     ).reset_index()
 
-    resumen["Promedio toneladas por traslado"] = (
-        resumen["Total_toneladas_estimadas"] /
-        resumen["Total_traslados"]
+    resumen[
+        "Promedio toneladas por traslado"
+    ] = (
+        resumen["Total_toneladas_estimadas"]
+        / resumen["Total_traslados"]
     ).fillna(0)
 
-    resumen = resumen.rename(columns={
-        "Residuo": "Residuo / disposición",
-        "Total_traslados": "Total traslados",
-        "Total_salidas_camion_y_carro":
-            "Total salidas camión y carro",
-        "Total_toneladas_estimadas":
-            "Total toneladas estimadas",
-        "Promedio_mensual_traslados":
-            "Promedio mensual traslados",
-        "Promedio_mensual_camion_y_carro":
-            "Promedio mensual camión y carro",
-        "Promedio_peso_por_traslado_kg":
-            "Promedio peso por traslado kg"
-    })
+    resumen = resumen.rename(
+        columns={
+            "Residuo":
+                "Residuo / disposicion",
+            "Total_traslados":
+                "Total traslados",
+            "Total_salidas_camion_y_carro":
+                "Total salidas camion y carro",
+            "Total_toneladas_estimadas":
+                "Total toneladas estimadas",
+            "Promedio_mensual_traslados":
+                "Promedio mensual traslados",
+            "Promedio_mensual_camion_y_carro":
+                "Promedio mensual camion y carro",
+            "Promedio_peso_por_traslado_kg":
+                "Promedio peso por traslado kg"
+        }
+    )
 
     resumen = resumen.round(2)
 
@@ -678,10 +1118,11 @@ try:
     )
 
     # =================================================
-    # PROMEDIOS MENSUALES POR DISPOSICIÓN
+    # PROMEDIOS MENSUALES POR RESIDUO
     # =================================================
+
     st.subheader(
-        "📈 Promedio mensual por residuo / disposición"
+        "📈 Promedio mensual por residuo / disposicion"
     )
 
     promedio_disposicion = (
@@ -693,7 +1134,7 @@ try:
                 "mean"
             ),
             Promedio_mensual_camion_y_carro=(
-                "Salidas camión y carro",
+                "Salidas camion y carro",
                 "mean"
             ),
             Promedio_mensual_toneladas=(
@@ -702,22 +1143,19 @@ try:
             )
         )
         .reset_index()
-    )
-
-    promedio_disposicion = (
-        promedio_disposicion.round(2)
-    )
-
-    promedio_disposicion = (
-        promedio_disposicion.rename(columns={
-            "Residuo": "Residuo / disposición",
-            "Promedio_mensual_traslados":
-                "Promedio mensual traslados",
-            "Promedio_mensual_camion_y_carro":
-                "Promedio mensual camión y carro",
-            "Promedio_mensual_toneladas":
-                "Promedio mensual toneladas"
-        })
+        .round(2)
+        .rename(
+            columns={
+                "Residuo":
+                    "Residuo / disposicion",
+                "Promedio_mensual_traslados":
+                    "Promedio mensual traslados",
+                "Promedio_mensual_camion_y_carro":
+                    "Promedio mensual camion y carro",
+                "Promedio_mensual_toneladas":
+                    "Promedio mensual toneladas"
+            }
+        )
     )
 
     col_g1, col_g2 = st.columns(2)
@@ -725,11 +1163,11 @@ try:
     with col_g1:
         fig_torta = px.pie(
             promedio_disposicion,
-            names="Residuo / disposición",
+            names="Residuo / disposicion",
             values="Promedio mensual traslados",
             hole=0.45,
             title=(
-                "Distribución del promedio mensual "
+                "Distribucion del promedio mensual "
                 "de traslados"
             )
         )
@@ -778,12 +1216,12 @@ try:
                 "Promedio mensual traslados",
                 ascending=False
             ),
-            x="Residuo / disposición",
+            x="Residuo / disposicion",
             y="Promedio mensual traslados",
             text="Promedio mensual traslados",
             title=(
                 "Promedio mensual de traslados "
-                "por disposición"
+                "por disposicion"
             )
         )
 
@@ -807,20 +1245,8 @@ try:
                 size=22,
                 color="#ffffff"
             ),
-            xaxis_title="Residuo / disposición",
-            yaxis_title="Promedio mensual de traslados",
-            xaxis=dict(
-                tickfont=dict(
-                    color="#ffffff",
-                    size=13
-                )
-            ),
-            yaxis=dict(
-                tickfont=dict(
-                    color="#ffffff",
-                    size=13
-                )
-            )
+            xaxis_title="Residuo / disposicion",
+            yaxis_title="Promedio mensual de traslados"
         )
 
         st.plotly_chart(
@@ -833,15 +1259,15 @@ try:
     with col_g3:
         fig_camion = px.bar(
             promedio_disposicion.sort_values(
-                "Promedio mensual camión y carro",
+                "Promedio mensual camion y carro",
                 ascending=False
             ),
-            x="Residuo / disposición",
-            y="Promedio mensual camión y carro",
-            text="Promedio mensual camión y carro",
+            x="Residuo / disposicion",
+            y="Promedio mensual camion y carro",
+            text="Promedio mensual camion y carro",
             title=(
                 "Promedio mensual de salidas "
-                "con camión y carro"
+                "con camion y carro"
             )
         )
 
@@ -865,20 +1291,8 @@ try:
                 size=22,
                 color="#ffffff"
             ),
-            xaxis_title="Residuo / disposición",
-            yaxis_title="Promedio mensual camión y carro",
-            xaxis=dict(
-                tickfont=dict(
-                    color="#ffffff",
-                    size=13
-                )
-            ),
-            yaxis=dict(
-                tickfont=dict(
-                    color="#ffffff",
-                    size=13
-                )
-            )
+            xaxis_title="Residuo / disposicion",
+            yaxis_title="Promedio mensual camion y carro"
         )
 
         st.plotly_chart(
@@ -892,7 +1306,7 @@ try:
                 "Promedio mensual toneladas",
                 ascending=False
             ),
-            x="Residuo / disposición",
+            x="Residuo / disposicion",
             y="Promedio mensual toneladas",
             text="Promedio mensual toneladas",
             title=(
@@ -921,20 +1335,8 @@ try:
                 size=22,
                 color="#ffffff"
             ),
-            xaxis_title="Residuo / disposición",
-            yaxis_title="Promedio mensual toneladas",
-            xaxis=dict(
-                tickfont=dict(
-                    color="#ffffff",
-                    size=13
-                )
-            ),
-            yaxis=dict(
-                tickfont=dict(
-                    color="#ffffff",
-                    size=13
-                )
-            )
+            xaxis_title="Residuo / disposicion",
+            yaxis_title="Promedio mensual toneladas"
         )
 
         st.plotly_chart(
@@ -945,6 +1347,7 @@ try:
     # =================================================
     # RESUMEN MENSUAL
     # =================================================
+
     st.subheader("📅 Resumen mensual")
 
     resumen_mensual = (
@@ -956,7 +1359,7 @@ try:
                 "sum"
             ),
             Total_salidas_camion_y_carro=(
-                "Salidas camión y carro",
+                "Salidas camion y carro",
                 "sum"
             ),
             Total_toneladas_estimadas=(
@@ -965,23 +1368,22 @@ try:
             )
         )
         .reset_index()
-    )
-
-    resumen_mensual = (
-        resumen_mensual.sort_values("Fecha")
+        .sort_values("Fecha")
     )
 
     resumen_mensual_tabla = (
         resumen_mensual
         .drop(columns=["Fecha"])
-        .rename(columns={
-            "Total_traslados":
-                "Total traslados",
-            "Total_salidas_camion_y_carro":
-                "Total salidas camión y carro",
-            "Total_toneladas_estimadas":
-                "Total toneladas estimadas"
-        })
+        .rename(
+            columns={
+                "Total_traslados":
+                    "Total traslados",
+                "Total_salidas_camion_y_carro":
+                    "Total salidas camion y carro",
+                "Total_toneladas_estimadas":
+                    "Total toneladas estimadas"
+            }
+        )
         .round(2)
     )
 
@@ -996,7 +1398,7 @@ try:
         x="Periodo",
         y="Total_traslados",
         markers=True,
-        title="Evolución mensual de traslados"
+        title="Evolucion mensual de traslados"
     )
 
     fig_linea.update_layout(
@@ -1011,19 +1413,7 @@ try:
             color="#ffffff"
         ),
         xaxis_title="Periodo",
-        yaxis_title="Total traslados",
-        xaxis=dict(
-            tickfont=dict(
-                color="#ffffff",
-                size=13
-            )
-        ),
-        yaxis=dict(
-            tickfont=dict(
-                color="#ffffff",
-                size=13
-            )
-        )
+        yaxis_title="Total traslados"
     )
 
     st.plotly_chart(
@@ -1032,8 +1422,9 @@ try:
     )
 
     # =================================================
-    # PIE DE PÁGINA
+    # PIE DE PAGINA
     # =================================================
+
     st.markdown(
         """
         <div style="
@@ -1058,7 +1449,9 @@ try:
     )
 
 except FileNotFoundError:
-    st.error("No se encontró la planilla Excel.")
+    st.error(
+        "No se encontro la planilla Excel."
+    )
 
     st.write(
         "El archivo debe estar en la misma carpeta que app.py "
@@ -1066,9 +1459,14 @@ except FileNotFoundError:
     )
 
     st.code(
-        "ANALISIS RESIDUOS NO PELIGROSOS ULTIMOS 7 MESES.xlsx"
+        archivo_excel
     )
 
-except Exception as e:
-    st.error("Ocurrió un error al cargar el dashboard.")
-    st.write(e)
+except Exception as error:
+    st.error(
+        "Ocurrio un error al cargar el dashboard."
+    )
+
+    st.write(
+        error
+    )
